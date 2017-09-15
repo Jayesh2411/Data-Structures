@@ -1,12 +1,14 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include<bits/stdc++.h>
+
+using namespace std;
 
 struct node {
 	int data;
 	struct node *next;
 };
+
 struct node *head=NULL;
-struct node *curr=NULL;
+struct node *tail=NULL;
 
 
 void create(int val) {
@@ -14,7 +16,7 @@ void create(int val) {
 	temp=(struct node* )malloc(sizeof(struct node));
 	temp->data=val;
 	temp->next=NULL;
-	head=curr=temp;
+	head=tail=temp;
 
 }
 void insert(int val,char place) {
@@ -26,31 +28,42 @@ void insert(int val,char place) {
 		temp->data=val;
 		if(place == 'e')	{
 			temp->next=NULL;
-			curr->next=temp;
-			curr=temp;	
+			tail->next=temp;
+			tail=temp;	
 		}
 		else if(place == 's')	{
 			temp->next=head;
 			head=temp;	
-			curr->next=NULL;
 		}	
 	}
 }
-void delete(int val) {
-		struct node *temp=head,*prev=NULL;
-		if(temp == NULL)
+
+struct node* reverse(struct node *head)	{
+	struct node *newnode=NULL;
+	tail=head;
+	while(head){
+		struct node *next=head->next;
+		head->next = newnode;
+		newnode = head;
+		head=next;
+	}
+	return newnode;
+}
+
+void deleteElement(int val,struct node *head) {
+		static struct node *prev=NULL;
+		if(head == NULL)
 			return;
+		if(head->data == val){
+			prev->next=head->next;
+			free(head);
+			head=prev;
+		}		
 		else	{
-			while(temp != NULL)	{
-				if(temp->data == val)	{
-					prev->next=temp->next;
-					free(temp);
-				}
-				prev=temp;				
-				temp=temp->next;
-			}
+			prev=head;
+			deleteElement(val,head->next);	
 		}
-		return;
+		
 }
 
 void display() {
@@ -85,55 +98,40 @@ void search(int val) {
 		printf("\n%d Not Found!",val);
 } 
 void insertloc(int val,int loc)	{
-	struct node *temp=head,*post;
+	struct node *temp=head;
 	
 		while(temp != NULL)	{
 			if(loc == temp->data)	{
 				struct node *temp1=(struct node* )malloc(sizeof(struct node));
 				temp1->data=val;
+				temp1->next=temp->next;
 				temp->next=temp1;
-				temp1->next=post;
 				break;
 			}
 			temp= temp->next;
-			post=temp->next;
+			
 		}
 	
 	return;
 }
 void removeduplicates()	{
 	
-	struct node *temp=head;
+	struct node *temp=head,*prev;
+	
 	if(temp == NULL)
 		return;
-	int i=0,j=0;
-	int *visited=(int* )calloc(1000,sizeof(int));
-
-	while(temp != NULL)	{
-		visited[i++]=temp->data;
-		temp=temp->next;
-	}
-	free(head);
-	head=NULL;
-	int *merged=(int* )calloc(1000,sizeof(int));	
-	int k,flag=0,a=0,prev=0;
-	for(j=0;j<i;j++)	{
-		flag =0;
-		while(visited[j] == prev)
-			j++;
-		for(k=0;k<i;k++)	{
-			if(visited[j] == visited[k] )	{
-				if(flag != 1)	
-				{		
-					merged[a++]=visited[j];			
-					flag=1;
-				}
-				prev=visited[j];
-			}
+	set<int > s;
+	for(temp=head;temp!=NULL;temp=temp->next){
+		if(s.find(temp->data) == s.end())
+			s.insert(temp->data);
+		else{
+			prev->next=temp->next;
+			free(temp);
+			temp=prev;
 		}
+		prev=temp;
 	}
-	for(j=0;j<a;j++)
-		insert(merged[j],'e');
+		
 }
 				
 int main()
@@ -143,7 +141,7 @@ int main()
 	
 	val=10;
 	while(i<1000) {
-		insert(val,'s');
+		insert(val*i,'s');
 		i=i+10;
 	}
 	val = 100;
@@ -152,33 +150,45 @@ int main()
 		insert(i,'e');
 		i=i+10;
 	}
+	head=reverse(head);
+
 	printf("\nPrinting list:");
 	display();
+
 	printf("\nRemoving Duplicates");
 	removeduplicates();
+
 	printf("\nAfter removing duplicates Printing list:");
 	display();	
+
 	printf("\nEnter element to search:");
 	scanf("%d",&val);
 	search(val);
+
 	printf("\nEnter element to delete:");
 	scanf("%d",&val);
-	delete(val);
+	deleteElement(val,head);
+
 	printf("\nAdd at front?");
 	scanf("%d",&val);
 	insert(val,'s');
+	display();
+
 	printf("\nAdd at end?");
 	scanf("%d",&val);
 	insert(val,'e');
+	display();
+
 	int loc;	
 	printf("\nAdd at location?");
 	scanf("%d %d",&loc,&val);
 	insertloc(val,loc);
+
 	printf("\nPrinting list:");
 	display();
+
 	return 0;
 }
-
 
 
 
